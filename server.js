@@ -7,3 +7,4 @@ var app = http.createServer(function (req, res) {
 
 app.listen(parseInt(process.env.PORT) || 7777); 
 console.log('Listening on ' + app.address().port);
+console.log('test');
