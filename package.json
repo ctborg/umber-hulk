@@ -1,0 +1,17 @@
+{
+  "author": "Cory Borg, Dethe Elza, Azlen Elza <coryborg@gmail.com>",
+  "name": "Galaxy Ruler",
+  "description": "A space game",
+  "version": "0.0.0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/nko2/umber-hulk.git"
+  },
+  "engines": {
+    "node": "~v0.4.11"
+  },
+  "dependencies": {
+    "nko": "~0.1.0"
+  },
+  "devDependencies": {}
+}
