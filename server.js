@@ -1,10 +1,9 @@
 var http = require('http'), 
     nko = require('nko')('TNvpskvCg1xzhyex');
-var app = http.createServer(function (req, res) { 
-  res.writeHead(200, { 'Content-Type': 'text/html' }); 
-  res.end('Hello, World'); 
+var app = require('express').createServer();
+
+app.get('/', function(req, res){
+  res.send('hello world');
 });
 
-app.listen(parseInt(process.env.PORT) || 7777); 
-console.log('Listening on ' + app.address().port);
-console.log('test');
+app.listen(3000);
