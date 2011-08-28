@@ -39,7 +39,6 @@ function startgame(){
 		    last_update_x = offset_x;
 		    last_update_y = offset_y;
 		    var c = center_hex();
-		    console.log('updating hexes centered on %d,%d', c.w, c.h);
 			tile(c.w,c.h);
 
 		}
@@ -63,7 +62,6 @@ function startgame(){
 	function center_hex(){
 		var c = zero_center_hex();
 		var o = offset_in_hexes();
-		console.log('center hex: %d,%d', c.w + o.w, c.h + o.h);
 		return {w: c.w + o.w, h: c.h + o.h};
 	}
 
@@ -103,9 +101,7 @@ function startgame(){
 		     the_hex;
 		if (hexes[x] && hexes[x][y]){
 			the_hex = hexes[x][y];
-			//console.log('found hex for %d,%d', x,y );
 		}else{
-			//console.log('drawing hex for %d,%d\n%o', x, y, desc);
 			var the_hex = new Group();
 			if (!hexes[x]){
 				hexes[x] = [];
@@ -277,7 +273,6 @@ function startgame(){
 			new_y = ship_pos.y - 10 * (dy / Math.abs(dy));
 		}
 		myship.position = [new_x, new_y];
-		console.log('moving towards %d,%d, now at %d,%d', pos.x, pos.y, new_x, new_y)
 		setTimeout(function(){moveShipTo(pos);}, 1000/30);
 	}
 
