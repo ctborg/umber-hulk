@@ -3,12 +3,15 @@ var http = require('http'),
     express = require('express'),
     app = express.createServer(),
     redis_lib = require("redis"),
-    redis = redis_lib.createClient();
-
+    redis = redis_lib.createClient(),
+    redis_session_store = require('connect-redis')(express);
+    
 app.configure(function(){
     app.use(express.methodOverride());
     app.use(express.bodyParser());
-    app.use(app.router);
+    app.use(express.cookieParser());
+    app.use(express.session({ secret: "vzi13nmADFmnizfFmkjkkZqaQa9pPI&^5n==", store: new redis_session_store }));;
+    app.use(app.router);    
 });
 
 app.configure('development', function(){
@@ -31,6 +34,57 @@ redis.on("error", function (err) {
 //TODO: add some error checking here.
 //TODO: add validation
 
+app.post('/new_user', function(request, response){
+    if( request.body.email &&
+        request.body.password ){
+            var bcrypt = require('bcrypt'),
+                salt = bcrypt.gen_salt_sync(10),  
+                hash = bcrypt.encrypt_sync( request.body.password, salt);
+
+            request.body.password = hash; //oh so awful
+            request.body.location = 0; //add intelligent location, for reals;
+            request.body.speed = 0; //add random speed;
+            User.add_or_update( request, response );
+            request.session.auth = true;  
+    } else{
+            response.writeHead(403);
+            response.end('Sorry you missing either a login or password.');
+            request.session.auth = false;
+    }
+
+})
+
+app.post( '/login', function( request, response){
+   if( request.body.email &&
+       request.body.password ){
+           redis.get( User.get_key( request.body.email ), function( err, data ){
+                var bcrypt = require('bcrypt'),
+                    parsed_data = JSON.parse(data),
+                    salt = bcrypt.gen_salt_sync(10),
+                    hash = bcrypt.encrypt_sync( request.body.password, salt);
+                if( bcrypt.compare_sync( request.body.password , hash) ){
+                    response.send( JSON.stringify( data ) );
+                    request.session.auth = true;
+                } else{
+                    response.writeHead(403);
+                    response.end('Sorry you are fail.');
+                    request.session.auth = false;
+                    return;
+                };      
+              });
+   } else{
+       response.writeHead(403);
+       response.end('Sorry you are unauthorized.');
+       request.session.auth = false;
+       return;
+   };
+});
+
+app.get( '/logout', function( request, response){
+   request.session.destroy();
+   response.send( 'OK');
+});
+
 // USERS
 // Create 
 var User = {
@@ -38,7 +92,8 @@ var User = {
     qualities : function( request ){
                     var user_qualities = { 'email'     : request.body.email,
                                            'location'  : request.body.location,
-                                           'speed'     : request.body.speed 
+                                           'speed'     : request.body.speed,
+                                           'password'  : request.body.password
                                           }; 
                                           
                     return user_qualities
