@@ -276,43 +276,61 @@ window.onload = startgame;
 
 //document ready
 $(function() {
-    $('#login_button').click( function(){
+    $('#login_button').live( 'click', function(){
         var login_data = { 'email' : $('#login_email').val(), 'password' : $('#login_password').val() };
         $.ajax({
             url: '/login' ,
             type : 'POST',
+            dataType : 'json',            
             data: login_data,
             statusCode: {
                 401 : function(){ alert( 'No user by that name.'); },
                 403 : function(){ alert( 'Invalid login or password.'); },
                 406 : function(){ alert( 'Please enter a login and password before hitting the login button.')},
-                200 : function(){ alert( 'login worked'); }
+                200 : function( data ){ display_user_data( data ) }
             }
         });
     });
 
-    $('#create_user_button').click( function(){
+    $('#create_user_button').live( 'click', function(){
         var login_data = { 'email' : $('#login_email').val(), 'password' : $('#login_password').val() };
         $.ajax({
             url: '/new_user' ,
             type : 'POST',
+            dataType : 'json',
             data: login_data,
             statusCode: {
                 401 : function(){ alert( 'No user by that name.'); },
                 403 : function(){ alert( 'Invalid login or password.'); },
                 406 : function(){ alert( 'Please enter a login and password before hitting the login button.')},
-                200 : function(){ alert( 'login worked'); }
+                200 : function( data ){ display_user_data( data ) }
             }
         });
     });
 
-    $('#logout_button').click( function(){
-        $.get('/logout', function(){
-            alert( 'Logged out' );
-        } );
+    $('#logout_button').live( 'click', function(){
+        $.get('/logout');
+        $('#identity').html('');
+        display_login_form();
     })
 
 });
+
+function display_user_data( data ){
+    console.log(data);
+    var html = $('<button id="logout_button" class="logout">Logout</button><p>Playing as <span id="user">'+ data['name'] +'</span></p>');
+    hide_login_form();
+    $('#identity').append( html );
+}
+
+function display_login_form(){
+    var html = '<h3>Login</h3><p><label for="login_email">Email:</label> <input name="login_email" id="login_email" /></p><p></label for="login_password">Password:</label> <input type="password" name="login_password" id="login_password" /></p><button id="login_button" class="login">Login</button><button id="create_user_button" class="login">New User</button>';
+    $('#login_box').html( html );
+}
+
+function hide_login_form(){
+    $('#login_box').html( '' );
+}
 
 function load_widgets(){
 	var node_ko_vote_html = '<div id="node-vote"><div class="text">Think we rock?<br>Vote 4 us!</div><iframe class="vote-button" src="http://nodeknockout.com/iframe/umber-hulk" frameborder="0" scrolling="no" allowtransparency="true" width="115" height="25"></iframe></div>';
@@ -330,10 +348,7 @@ function load_widgets(){
     }, 25 );
     
     setTimeout( function(){ $.get('/myself', function( response ){
-            console.log( response );
-            var parsed_data = JSON.parse( response );
-            html = $('<button id="logout_button" class="logout">Logout</button><p>Playing as <span id="user">'+ parsed_data['name'] +'</span></p>');
-            $('#identity').append( html );
+            response ? display_user_data( JSON.parse( response ) ) : display_login_form();
         });
     }, 30);
 });

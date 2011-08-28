@@ -47,6 +47,7 @@ app.post('/new_user', function(request, response){
                        hash = bcrypt.encrypt_sync( request.body.password, salt);
 
                    redis.mget( 'Universe:largest_x', 'Universe:largest_y', function( err, data){
+                       request.body.name = request.body.email;
                        request.body.password = hash; //oh so awful
                        request.body.location = data;
                        request.body.speed = 0; //add random speed;
