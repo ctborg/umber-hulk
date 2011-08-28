@@ -136,7 +136,7 @@ $(function() {
         var login_data = { 'email' : $('#login_email').val(), 'password' : $('#login_password').val() };
         $.ajax({
             url: '/login' ,
-            type : 'POST', 
+            type : 'POST',
             data: login_data,
             statusCode: {
                 401 : function(){ alert( 'No user by that name.'); },
@@ -151,7 +151,7 @@ $(function() {
         var login_data = { 'email' : $('#login_email').val(), 'password' : $('#login_password').val() };
         $.ajax({
             url: '/new_user' ,
-            type : 'POST', 
+            type : 'POST',
             data: login_data,
             statusCode: {
                 401 : function(){ alert( 'No user by that name.'); },
@@ -161,14 +161,14 @@ $(function() {
             }
         });
     });
-    
+
     $('#logout_button').click( function(){
         $.get('/logout', function(){
             alert( 'Logged out' );
         } );
     })
-        
+	var node_ko_vote_html = '<div id="node-vote"><div class="text">Think we rock?<br>Vote 4 us!</div><iframe class="vote-button" src="http://nodeknockout.com/iframe/umber-hulk" frameborder="0" scrolling="no" allowtransparency="true" width="115" height="25"></iframe></div>';
+	// Vote button blocks site from loading.  Prepend after load.
+	setTimeout( function(){ $('#identity').prepend( node_ko_vote_html ) }, 20 );
+
 });
-var node_ko_vote_html = '<div id="node-vote"><div class="text">Think we rock?<br>Vote 4 us!</div><iframe class="vote-button" src="http://nodeknockout.com/iframe/umber-hulk" frameborder="0" scrolling="no" allowtransparency="true" width="115" height="25"></iframe></div>';
-// Vote button blocks site from loading.  Prepend after load.
-setTimeout( function(){ $('#identity').prepend( node_ko_vote_html ) }, 2000 );
