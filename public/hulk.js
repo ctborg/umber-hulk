@@ -388,7 +388,7 @@ function load_widgets(){
 
         var html = $( string_array.join(' ') );
         $('#leaderboard').append( html );
-    }, 25 );
+    }), 25 );
 
     setTimeout( function(){ $.get('/myself', function( response ){
             response ? display_user_data( JSON.parse( response ) ) : display_login_form();
