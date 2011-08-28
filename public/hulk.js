@@ -295,9 +295,6 @@ function startgame(){
 			canvas.attr({width: window.innerWidth, height: window.innerHeight});
 		}
 		var tool = new Tool();
-		tool.onMouseDrag = function(event){
-			move_by(event.delta);
-		};
 		tool.onMouseUp = function(event){
 			try{
 				moveShipTo(event.item.getPosition());
