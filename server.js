@@ -174,10 +174,10 @@ var Planet = {
     get_planet_defense : function(){
         return Math.floor(Math.random()*9)
     },
-    create_planet : function(){
+    create_planet : function(x,y){
         //build planet creation logic here
         var planet = {  'name'      : this.get_planet_name(),
-                        'location'  : this.get_planet_location(),
+                        'location'  : [ x, y ],
                         'resource'  : this.get_planet_resources(),
                         'defense'   : this.get_planet_defense(),
                         'owner'     : null }
@@ -211,8 +211,8 @@ var Universe = {
     add_or_update : function(request, response){
         Helper.add_or_update( request, response, 'Planet', this.qualities( request ) )
     },
-    get_planet_maybe : function(){
-        return Helper.randint(1, 10) == 10 ? Planet.create_planet() : false;
+    get_planet_maybe : function(x,y){
+        return Helper.randint(1, 10) == 10 ? Planet.create_planet(x,y) : false;
     }
 }
 
@@ -227,7 +227,7 @@ app.get('/universe/:x/:y/:range', function( request, response){
     for (var i= x_range_min; i <= x_range_max; i++ ){
         for (var j= y_range_min; j <= y_range_max; j++ ){
             lookup_keys.push( 'Universe:' + i + ':' + j);
-            lookup_keys.push( JSON.stringify( { 'location' : i.toString() + '|' + j.toString(), 'planet' : Universe.get_planet_maybe(), 'user' : false } ) );
+            lookup_keys.push( JSON.stringify( { 'location' :[i,j], 'planet' : Universe.get_planet_maybe(i,j), 'user' : false } ) );
         }
     }
     console.log( lookup_keys );
