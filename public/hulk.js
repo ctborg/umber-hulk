@@ -146,6 +146,21 @@ $(function() {
             }
         });
     });
+
+    $('#create_user_button').click( function(){
+        var login_data = { 'email' : $('#login_email').val(), 'password' : $('#login_password').val() };
+        $.ajax({
+            url: '/new_user' ,
+            type : 'POST', 
+            data: login_data,
+            statusCode: {
+                401 : function(){ alert( 'No user by that name.'); },
+                403 : function(){ alert( 'Invalid login or password.'); },
+                406 : function(){ alert( 'Please enter a login and password before hitting the login button.')},
+                200 : function(){ alert( 'login worked'); }
+            }
+        });
+    });
     
     $('#logout_button').click( function(){
         $.get('/logout', function(){

@@ -37,10 +37,16 @@ redis.on("error", function (err) {
 app.post('/new_user', function(request, response){
     if( request.body.email &&
         request.body.password ){
+            redis.get( User.get_key( request.body.email ), function( err, data ){
+               if( data ){
+                   response.writeHead(403);
+                   response.end('User exists.');
+               } 
+            });
             var bcrypt = require('bcrypt'),
                 salt = bcrypt.gen_salt_sync(10),  
                 hash = bcrypt.encrypt_sync( request.body.password, salt);
-
+                    
             request.body.password = hash; //oh so awful
             request.body.location = 0; //add intelligent location, for reals;
             request.body.speed = 0; //add random speed;
@@ -209,17 +215,17 @@ app.get('/universe/:x/:y/:range', function( request, response){
     //A bit of an oddball function.  Get space, if unknown set space.
     var lookup_keys = [],
         empty_space = [],
-        x_range_max = request.params.x + request.params.range,
-        x_range_min = request.params.x - request.params.range,
-        y_range_max = request.params.y + request.params.range,
-        y_range_min = request.params.y - request.params.range;
+        x_range_max = parseInt( request.params.x ) + parseInt( request.params.range ),
+        x_range_min = parseInt( request.params.x ) - parseInt( request.params.range ),
+        y_range_max = parseInt( request.params.y ) + parseInt( request.params.range ),
+        y_range_min = parseInt( request.params.y ) - parseInt( request.params.range );
     for (var i= x_range_min; i <= x_range_max; i++ ){
         for (var j= y_range_min; j <= y_range_max; j++ ){
             lookup_keys.push( 'Universe:' + i + ':' + j);
-            lookup_keys.push( JSON.stringify( { 'location' : i + '' + j, 'planet' : false, 'user' : false } ) );
+            lookup_keys.push( JSON.stringify( { 'location' : i.toString() + '|' + j.toString(), 'planet' : false, 'user' : false } ) );
         } 
     }
-
+    console.log( lookup_keys );
     redis.msetnx( lookup_keys );
     
     redis.mget( lookup_keys, function( err, data ){
