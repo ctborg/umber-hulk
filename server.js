@@ -181,13 +181,52 @@ app.get('/planets/:id', function(request, response) {
   } );
 });
 
+//UNIVERSE
+
+var Universe = {
+    get_key : function(id){ return Helper.get_key( id , 'Universe') },
+    qualities : function( universe ){
+                    var universe_qualities = { 'location'  : universe.location,
+                                               'planet'    : universe.planet,
+                                               'user'      : universe.user
+                                             }; 
+                                          
+                    return universe_qualities
+                },
+    add_or_update : function(request, response){
+        Helper.add_or_update( request, response, 'Planet', this.qualities( request ) )
+    }   
+}
+
+app.get('/universe/:x/:y/:range', function( request, response){
+    //A bit of an oddball function.  Get space, if unknown set space.
+    var lookup_keys = [],
+        empty_space = [],
+        x_range_max = request.params.x + request.params.range,
+        x_range_min = request.params.x - request.params.range,
+        y_range_max = request.params.y + request.params.range,
+        y_range_min = request.params.y - request.params.range;
+    for (var i= x_range_min; i <= x_range_max; i++ ){
+        for (var j= y_range_min; j <= y_range_max; j++ ){
+            lookup_keys.push( 'Universe:' + i + ':' + j);
+            lookup_keys.push( JSON.stringify( { 'location' : i + '' + j, 'planet' : false, 'user' : false } ) );
+        } 
+    }
+
+    redis.msetnx( lookup_keys );
+    
+    redis.mget( lookup_keys, function( err, data ){
+        response.send( JSON.stringify( data ) );
+    });
+});
+
 //LEADERBOARD
 
 var LeaderBoard = {
     index_name : 'leaderboard',
     add_score : function( score, user, type) {
         redis.zadd( this.name, score, user, function( err, data ){
-            return data;
+            response.send( JSON.stringify( data ));
         });
     },
     get_top_10 : function( callback, type ){
