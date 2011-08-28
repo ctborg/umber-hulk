@@ -11,18 +11,27 @@ function startgame(){
 
 	function scroll_left(dx){
 		project.layers[0].translate([-dx,0]);
+		offset_x -= dx;
 	}
 
 	function scroll_right(dx){
 		project.layers[0].translate([dx,0]);
+		offset_x += dx;
 	}
 
 	function scroll_up(dy){
 		project.layers[0].translate([0,dy]);
+		offset_y += dy;
 	}
 
 	function scroll_down(dy){
 		project.layers[0].translate([0,-dy]);
+	}
+
+	function move_by(pt){
+		project.layers[0].translate(pt);
+		offset_x += pt[0];
+		offset_y += pt[1];
 	}
 
 	function screen_size_in_hexes(){
@@ -140,7 +149,6 @@ function startgame(){
 		    defence = desc.defence,
 		    owner = desc.owner,
 		    p;
-//		console.log('drawing a planet at %s, %s', cx, cy);
 		p = new Raster($('#planet' + d(18))[0]);
 		p.position = [cx,cy];
 		return p;
@@ -162,7 +170,6 @@ function startgame(){
 		return s;
 	}
 	function tile(x,y,callback){
-		console.log('hitting the url /universe/%s/%s/%s', x, y, context_hexes());
 		$.getJSON('/universe/' + x + '/' + y + '/' + context_hexes(), function(data){
 			$.each(data, function(){
 				 hex(this);
@@ -256,8 +263,10 @@ function startgame(){
 		view.onResize = function(event){
 			canvas.attr({width: window.innerWidth, height: window.innerHeight});
 		}
-//		$(document.body).drag(function(event){
-//		});
+		var tool = new Tool();
+		tool.onMouseDrag = function(event){
+			move_by(event.delta);
+		};
 	});
 	load_widgets();
 };
