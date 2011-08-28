@@ -41,17 +41,23 @@ app.post('/new_user', function(request, response){
                if( data ){
                    response.writeHead(403);
                    response.end('User exists.');
+               } else{
+                   var bcrypt = require('bcrypt'),
+                       salt = bcrypt.gen_salt_sync(10),
+                       hash = bcrypt.encrypt_sync( request.body.password, salt);
+
+                   redis.mget( 'Universe:largest_x', 'Universe:largest_y', function( err, data){
+                       request.body.password = hash; //oh so awful
+                       request.body.location = data;
+                       request.body.speed = 0; //add random speed;
+                       User.add_or_update( request, response );
+                       request.session.auth = true;
+                   });
+                   
                }
             });
-            var bcrypt = require('bcrypt'),
-                salt = bcrypt.gen_salt_sync(10),
-                hash = bcrypt.encrypt_sync( request.body.password, salt);
-
-            request.body.password = hash; //oh so awful
-            request.body.location = 0; //add intelligent location, for reals;
-            request.body.speed = 0; //add random speed;
-            User.add_or_update( request, response );
-            request.session.auth = true;
+            
+            
     } else{
             response.writeHead(403);
             response.end('Sorry you missing either a login or password.');
@@ -70,8 +76,9 @@ app.post( '/login', function( request, response){
                         console.log( parsed_data );
                         hash = parsed_data['password'];
                     if( bcrypt.compare_sync(  request.body.password, hash ) ){
-                        response.send( JSON.stringify( data ) );
                         request.session.auth = true;
+                        request.session.user = data;
+                        response.send( JSON.stringify( data ) );
                     } else{
                         response.writeHead(403);
                         response.end('Sorry you are fail.');
@@ -102,7 +109,7 @@ app.get( '/logout', function( request, response){
 var User = {
     get_key : function(id){ return Helper.get_key( id , 'User'); },
     qualities : function( request ){
-                    var user_qualities = { 'name'     : request.body.email,
+                    var user_qualities = { 'name'      : request.body.email,
                                            'email'     : request.body.email,
                                            'location'  : request.body.location,
                                            'speed'     : request.body.speed,
@@ -116,9 +123,9 @@ var User = {
     }
 };
 
-app.post('/users', function(request, response) {
-    User.add_or_update( request, response );
-});
+//app.post('/users', function(request, response) {
+//    User.add_or_update( request, response );
+//});
 
 // Read
 app.get('/users/:id', function(request, response) {
@@ -128,16 +135,16 @@ app.get('/users/:id', function(request, response) {
 });
 
 // Update
-app.put('/users/:id', function(request, response) {
-    User.add_or_update( request, response );
-});
+//app.put('/users/:id', function(request, response) {
+//    User.add_or_update( request, response );
+//});
 
 // Delete
-app.del('/users/:id', function(request, response) {
-    redis.del( User.get_key( request.params.id ), function( err, data){
-        response.send( JSON.stringify( data ) );
-    });
-});
+//app.del('/users/:id', function(request, response) {
+//    redis.del( User.get_key( request.params.id ), function( err, data){
+//        response.send( JSON.stringify( data ) );
+//    });
+//});
 
 //PLANETS
 // Create
@@ -214,12 +221,24 @@ var Universe = {
     },
     get_planet_maybe : function(x,y){
         return Helper.randint(1, 10) == 10 ? Planet.create_planet(x,y) : false;
+    },
+    place_user_at_edge_of_known_universe : function( callback ){
+        redis.mget( 'Universe:largest_x', 'Universe:largest_y', callback);
+        //increment by 10 for every new user, so they don't stack up.
+        redis.INCRBY( 'Universe:largest_x', 10 )
+        redis.INCRBY( 'Universe:largest_y', 10 )
     }
 }
+
+app.get( '/test/user_placement', function(request, response){
+    //Universe.place_user_at_edge_of_known_universe()
+    
+});
 
 app.get('/universe/:x/:y/:range', function( request, response){
     //A bit of an oddball function.  Get space, if unknown set space.
     var lookup_keys = [],
+        get_keys    = [],
         empty_space = [],
         x_range_max = parseInt( request.params.x ) + parseInt( request.params.range ),
         x_range_min = parseInt( request.params.x ) - parseInt( request.params.range ),
@@ -229,14 +248,19 @@ app.get('/universe/:x/:y/:range', function( request, response){
         for (var j= y_range_min; j <= y_range_max; j++ ){
             lookup_keys.push( 'Universe:' + i + ':' + j);
             lookup_keys.push( JSON.stringify( { 'location' :[i,j], 'planet' : Universe.get_planet_maybe(i,j), 'user' : false } ) );
+            get_keys.push( 'Universe:' + i + ':' + j );
         }
     }
-    console.log( lookup_keys );
-    redis.msetnx( lookup_keys );
-
-    redis.mget( lookup_keys, function( err, data ){
-        response.send( JSON.stringify( data ) );
+    
+    redis.INCRBY( 'Universe:largest_x', x_range_max )
+    redis.INCRBY( 'Universe:largest_y', y_range_max )
+        
+    redis.msetnx( lookup_keys, function(err, data){
+        redis.mget( get_keys, function( err, data ){
+            response.send( JSON.stringify( data ) );
+        });
     });
+
 });
 
 //LEADERBOARD

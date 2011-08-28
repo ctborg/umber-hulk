@@ -243,6 +243,7 @@ function startgame(){
 	var canvas = $('#canvas');
 	canvas.attr({width: window.innerWidth, height: window.innerHeight});
 	paper.setup(canvas[0]);
+<<<<<<< HEAD
 	var c = center_hex();
 	tile(c[0],c[1], function(){
 		ship(dX(5,4), dY(4), 'blue', true);
@@ -253,6 +254,15 @@ function startgame(){
 //		scroll_up(200);
 	});
 	load_widgets();
+=======
+	var canvas_size = screen_size_in_hexes();
+	tile(0,0, canvas_size.w, canvas_size.h);
+	var x = randint(0,5), y = randint(0,5);
+	ship(dX(5,4), dY(4), 'blue', true);
+	ship(dX(9,7), dY(7), 'green');
+	ship(dX(1,6), dY(6));
+	paper.view.draw();
+>>>>>>> 2d1f546e876920d96e482d8cdeba36fa768221da
 };
 
 
@@ -302,17 +312,16 @@ function load_widgets(){
 	var node_ko_vote_html = '<div id="node-vote"><div class="text">Think we rock?<br>Vote 4 us!</div><iframe class="vote-button" src="http://nodeknockout.com/iframe/umber-hulk" frameborder="0" scrolling="no" allowtransparency="true" width="115" height="25"></iframe></div>';
 	// Vote button blocks site from loading.  Prepend after load.
 	setTimeout( function(){ $('#identity').prepend( node_ko_vote_html ) }, 20 );
+    setTimeout( function(){ $.get('/leaderboard', function( response ){
+        var parsed_data = JSON.parse( response );
+        var string_array = [];
+        jQuery.each( parsed_data, function( key, value ){
+            string_array.push('<li value="' + ( key + 1 )  +'"><span class="player you">' + value['name']  +'</span> <span class="score">' + value['score'] +'</span></li>');
+        });
 
-	setTimeout( function(){ $.get('/leaderboard', function( response ){
-		var parsed_data = JSON.parse( response );
-		var string_array = [];
-		console.log( parsed_data  );
-		jQuery.each( parsed_data, function( key, value ){
-			string_array.push('<li value="' + ( key + 1 )  +'"><span class="player you">' + value['name']  +'</span> <span class="score">' + value['score'] +'</span></li>');
-		});
-
-		var html = $( string_array.join(' ') );
-		$('#leaderboard').append( html );
-	}) }, 20 );
+        var html = $( string_array.join(' ') );
+        $('#leaderboard').append( html );
+    }) }, 25 );
+});
 
 }
