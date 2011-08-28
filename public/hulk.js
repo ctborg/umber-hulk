@@ -52,7 +52,7 @@ function startgame(){
 		return group;
 	}
 	function randint(start, stop){
-    	// return an integer between start and stop, inclusive
+        // return an integer between start and stop, inclusive
     	if (stop === undefined){
         	stop = start;
         	start = 0;
@@ -104,14 +104,22 @@ function startgame(){
 	function tile(x,y){
 		for (var i = 0; i < 6; i++){
 			for (var j = 0; j < 6; j++){
-				var dx = (j % 2) ? 0 : 50;
-				hex(i * 100 + x + dx, j * 85 + y);			}
+				hex(i + x, j + y);
+			}
 		}
 	}
 	var canvas = $('#canvas');
 	canvas.attr({width: window.innerWidth, height: window.innerHeight});
 	paper.setup(canvas[0]);
 	tile(0,0);
+	tile(0,6);
+	tile(0,12);
+	tile(6,0);
+	tile(6,6);
+	tile(6,12);
+	tile(12,0);
+	tile(12,6);
+	tile(12,12);
 	var x = randint(0,5), y = randint(0,5);
 	ship(dX(x,y), dY(y));
 	paper.view.draw();
