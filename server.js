@@ -102,7 +102,8 @@ app.get( '/logout', function( request, response){
 var User = {
     get_key : function(id){ return Helper.get_key( id , 'User'); },
     qualities : function( request ){
-                    var user_qualities = { 'email'     : request.body.email,
+                    var user_qualities = { 'name'     : request.body.email,
+                                           'email'     : request.body.email,
                                            'location'  : request.body.location,
                                            'speed'     : request.body.speed,
                                            'password'  : request.body.password
