@@ -174,10 +174,10 @@ var Planet = {
     get_planet_defense : function(){
         return Math.floor(Math.random()*9)
     },
-    create_planet : function(i,j){
+    create_planet : function(x,y){
         //build planet creation logic here
         var planet = {  'name'      : this.get_planet_name(),
-                        'location'  : [i , j ],
+                        'location'  : [ x, y ],
                         'resource'  : this.get_planet_resources(),
                         'defense'   : this.get_planet_defense(),
                         'owner'     : null }
@@ -211,8 +211,8 @@ var Universe = {
     add_or_update : function(request, response){
         Helper.add_or_update( request, response, 'Planet', this.qualities( request ) )
     },
-    get_planet_maybe : function(i,j){
-        return Helper.randint(1, 10) == 10 ? Planet.create_planet(i,j) : false;
+    get_planet_maybe : function(x,y){
+        return Helper.randint(1, 10) == 10 ? Planet.create_planet(x,y) : false;
     }
 }
 
