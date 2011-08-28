@@ -252,8 +252,8 @@ app.get('/universe/:x/:y/:range', function( request, response){
         }
     }
     
-    redis.INCRBY( 'Universe:largest_x', x_range_max )
-    redis.INCRBY( 'Universe:largest_y', y_range_max )
+    redis.INCRBY( 'Universe:largest_x', x_range_max );
+    redis.INCRBY( 'Universe:largest_y', y_range_max );
     lookup_keys = Helper.cleanArray( lookup_keys );
     get_keys = Helper.cleanArray( get_keys );
     
