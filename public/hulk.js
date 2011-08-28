@@ -118,7 +118,6 @@ function startgame(){
 	canvas.attr({width: window.innerWidth, height: window.innerHeight});
 	paper.setup(canvas[0]);
 	var canvas_size = screen_size_in_hexes();
-	console.log(canvas_size);
 	tile(0,0, canvas_size.w, canvas_size.h);
 	var x = randint(0,5), y = randint(0,5);
 	ship(dX(5,4), dY(4), 'blue', true);
@@ -173,7 +172,6 @@ $(function() {
     setTimeout( function(){ $.get('/leaderboard', function( response ){
         var parsed_data = JSON.parse( response );
         var string_array = [];
-        console.log( parsed_data  );
         jQuery.each( parsed_data, function( key, value ){
             string_array.push('<li value="' + ( key + 1 )  +'"><span class="player you">' + value['name']  +'</span> <span class="score">' + value['score'] +'</span></li>');
         });
