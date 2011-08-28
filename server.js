@@ -58,21 +58,28 @@ app.post( '/login', function( request, response){
    if( request.body.email &&
        request.body.password ){
            redis.get( User.get_key( request.body.email ), function( err, data ){
-                var bcrypt = require('bcrypt'),
-                    parsed_data = JSON.parse(data);
-                    hash = parsed_data['password'];
-                if( bcrypt.compare_sync(  request.body.password, hash ) ){
-                    response.send( JSON.stringify( data ) );
-                    request.session.auth = true;
-                } else{
-                    response.writeHead(403);
-                    response.end('Sorry you are fail.');
-                    request.session.auth = false;
-                    return;
-                };      
+               if( data ){
+                    var bcrypt = require('bcrypt'),
+                        parsed_data = JSON.parse(data);
+                        console.log( parsed_data );
+                        hash = parsed_data['password'];
+                    if( bcrypt.compare_sync(  request.body.password, hash ) ){
+                        response.send( JSON.stringify( data ) );
+                        request.session.auth = true;
+                    } else{
+                        response.writeHead(403);
+                        response.end('Sorry you are fail.');
+                        request.session.auth = false;
+                        return;
+                    };
+                }else{
+                    response.writeHead(401);
+                    response.end('Invalid login');
+                    request.session.auth = false;                    
+                }      
               });
    } else{
-       response.writeHead(403);
+       response.writeHead(406);
        response.end('Sorry you are unauthorized.');
        request.session.auth = false;
        return;

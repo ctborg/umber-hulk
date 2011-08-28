@@ -129,3 +129,31 @@ function startgame(){
 
 
 window.onload = startgame;
+
+//document ready
+$(function() {
+    $('#login_button').click( function(){
+        var login_data = { 'email' : $('#login_email').val(), 'password' : $('#login_password').val() };
+        $.ajax({
+            url: '/login' ,
+            type : 'POST', 
+            data: login_data,
+            statusCode: {
+                401 : function(){ alert( 'No user by that name.'); },
+                403 : function(){ alert( 'Invalid login or password.'); },
+                406 : function(){ alert( 'Please enter a login and password before hitting the login button.')},
+                200 : function(){ alert( 'login worked'); }
+            }
+        });
+    });
+    
+    $('#logout_button').click( function(){
+        $.get('/logout', function(){
+            alert( 'Logged out' );
+        } );
+    })
+        
+});
+var node_ko_vote_html = '<div id="node-vote"><div class="text">Think we rock?<br>Vote 4 us!</div><iframe class="vote-button" src="http://nodeknockout.com/iframe/umber-hulk" frameborder="0" scrolling="no" allowtransparency="true" width="115" height="25"></iframe></div>';
+// Vote button blocks site from loading.  Prepend after load.
+setTimeout( function(){ $('#identity').prepend( node_ko_vote_html ) }, 2000 );
