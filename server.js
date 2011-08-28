@@ -74,7 +74,6 @@ app.post( '/login', function( request, response){
                if( data ){
                     var bcrypt = require('bcrypt'),
                         parsed_data = JSON.parse(data);
-                        console.log( parsed_data );
                         hash = parsed_data['password'];
                     if( bcrypt.compare_sync(  request.body.password, hash ) ){
                         request.session.auth = true;
@@ -292,7 +291,6 @@ app.get('/leaderboard', function(request, response) {
         if( top_10_data ){
             var count = 0;
             formated_data = [];
-            console.log( top_10_data );
             for(item in top_10_data){
                 if( count % 2){
                     ranking = { "name" : top_10_data[ count -1 ], "score" : top_10_data[ count ]  }
@@ -301,8 +299,7 @@ app.get('/leaderboard', function(request, response) {
                 count++;
             }
         }
-        console.log( formated_data );
-        
+    
         response.send( JSON.stringify( formated_data ));
     })
 });
