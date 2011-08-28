@@ -131,18 +131,21 @@ app.get('/planets/:id', function(request, response) {
 
 var LeaderBoard = {
     index_name : 'leaderboard',
-    add_score : function( score, user) {
+    add_score : function( score, user, type) {
         redis.zadd( this.name, score, user, function( err, data ){
             return data;
         });
+    },
+    get_top_10 : function( callback ){
+        redis.zrange( 'leaderboard', 0, 10, callback );
     },
     update_score : function( score, user ){ return this.add( score, user ) }
 };
 
 app.get('/leaderboard', function(request, response) {
-    redis.zrange( LeaderBoard.index_name, 0, 10, function( err, data){
-        response.send( JSON.stringify( data ) );
-    });
+    LeaderBoard.get_top_10( function( err, top_10_data ){
+        response.send( JSON.stringify( top_10_data ));
+    })
 });
 
 app.get('/leaderboard/:type', function(request, response) {
