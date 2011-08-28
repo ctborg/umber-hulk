@@ -87,10 +87,12 @@ function startgame(){
 			return p;
 		}
 	}
-	function ship(x,y){
-			var p = new Raster($('#ship' + d(30))[0]);
+	function ship(x,y,color,owned){
+			// color is blue, green, red, or plain
+			var type = owned ? 'player' : '';
+			color =  color || 'plain'
+			var p = new Raster($('#' + type + 'ship' + color)[0]);
 			p.position = [x,y];
-			p.scale(.25);
 	}
 	function star(x,y, magnitude){
 		var cx, cy, r = d(HEX_APOTHEM), theta = d(360) * DEGREE;
@@ -121,7 +123,9 @@ function startgame(){
 	tile(12,6);
 	tile(12,12);
 	var x = randint(0,5), y = randint(0,5);
-	ship(dX(x,y), dY(y));
+	ship(dX(5,4), dY(4), 'blue', true);
+	ship(dX(9,7), dY(7), 'green');
+	ship(dX(1,6), dY(6));
 	paper.view.draw();
 };
 
