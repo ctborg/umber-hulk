@@ -182,6 +182,7 @@ var Planet = {
                         'defense'   : this.get_planet_defense(),
                         'owner'     : null }
         this.add_or_update( planet )
+        return planet;
     },
     conquer_planet : function(){},
     delete_planet : function(){},
@@ -199,7 +200,8 @@ app.get('/planets/:id', function(request, response) {
 var Universe = {
     get_key : function(id){ return Helper.get_key( id , 'Universe') },
     qualities : function( universe ){
-                    var universe_qualities = { 'location'  : universe.location,
+                    var universe_qualities = { 'name'  : universe.location,
+                                               'location'  : universe.location,
                                                'planet'    : universe.planet,
                                                'user'      : universe.user
                                              };
@@ -208,6 +210,9 @@ var Universe = {
                 },
     add_or_update : function(request, response){
         Helper.add_or_update( request, response, 'Planet', this.qualities( request ) )
+    },
+    get_planet_maybe : function(){
+        return Helper.randint(1, 10) == 10 ? Planet.create_planet() : false;
     }
 }
 
@@ -222,7 +227,7 @@ app.get('/universe/:x/:y/:range', function( request, response){
     for (var i= x_range_min; i <= x_range_max; i++ ){
         for (var j= y_range_min; j <= y_range_max; j++ ){
             lookup_keys.push( 'Universe:' + i + ':' + j);
-            lookup_keys.push( JSON.stringify( { 'location' : i.toString() + '|' + j.toString(), 'planet' : false, 'user' : false } ) );
+            lookup_keys.push( JSON.stringify( { 'location' : i.toString() + '|' + j.toString(), 'planet' : Universe.get_planet_maybe(), 'user' : false } ) );
         }
     }
     console.log( lookup_keys );
@@ -263,31 +268,10 @@ app.get('/leaderboard/:type', function(request, response) {
 
 //HELPERS
 
-function randint(start, stop){
-	// return an integer between start and stop, inclusive
-	if (stop === undefined){
-		stop = start;
-		start = 0;
-	}
-	var factor = stop - start + 1;
-	return Math.floor(Math.random() * factor) + start;
-}
-function d(no_dice, sides){
-	if (sides === undefined){
-		sides = no_dice;
-		no_dice = 1;
-	}
-	var val = 0;
-	for (var i = 0; i < no_dice; i++){
-		val += randint(1, sides);
-	}
-	return val;
-}
-
-
 var Helper = {
     add_or_update : function( request, response, type, qualities ){
-        var key = this.get_key( request.body.email, type );
+        var the_key = qualities ? qualities.name : request.body.email 
+        var key = this.get_key( the_key, type );
 
         redis.get( key, function(err, data){
            //check error, if no error and no value returned, then insert.
@@ -296,13 +280,33 @@ var Helper = {
            }
         });
 
-        response.send( request.body );
+        response ? response.send( request.body ) : qualities;
     },
     get_key : function( id, type ){
         var   type        = type,
               version     = 'v1',
               key = type + ':' + version +':' + id;
         return key;
+    },
+    randint: function(start, stop){
+    	// return an integer between start and stop, inclusive
+    	if (stop === undefined){
+    		stop = start;
+    		start = 0;
+    	}
+    	var factor = stop - start + 1;
+    	return Math.floor(Math.random() * factor) + start;
+    },
+    d: function(no_dice, sides){
+    	if (sides === undefined){
+    		sides = no_dice;
+    		no_dice = 1;
+    	}
+    	var val = 0;
+    	for (var i = 0; i < no_dice; i++){
+    		val += randint(1, sides);
+    	}
+    	return val;
     }
 };
 
