@@ -1,0 +1,11 @@
+.planet, .ship{
+	position: absolute;
+	left: -1000px;
+}
+
+#canvas{
+	position: absolute;
+	top: 0px;
+	left: 0px;
+}
+
