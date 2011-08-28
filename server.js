@@ -134,6 +134,10 @@ app.get('/users/:id', function(request, response) {
   } );
 });
 
+app.get('/myself', function(request,response){
+    request.session.user ? response.send( request.session.user['name'] ) : response.send( null );
+});
+
 // Update
 //app.put('/users/:id', function(request, response) {
 //    User.add_or_update( request, response );
