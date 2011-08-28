@@ -249,8 +249,16 @@ function startgame(){
 //		vectorShip('#963', '#369', true);
 		paper.view.draw();
 //		scroll_up(200);
+		var c = zero_center_hex();
+		view.onFrame = function(event){
+			paper.view.draw();
+		};
+		view.onResize = function(event){
+			canvas.attr({width: window.innerWidth, height: window.innerHeight});
+		}
+//		$(document.body).drag(function(event){
+//		});
 	});
-	setInterval(paper.view.draw, 1000/30);
 	load_widgets();
 };
 
