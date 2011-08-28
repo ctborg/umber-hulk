@@ -317,7 +317,6 @@ $(function() {
 });
 
 function display_user_data( data ){
-    console.log(data);
     var html = $('<button id="logout_button" class="logout">Logout</button><p>Playing as <span id="user">'+ data['name'] +'</span></p>');
     hide_login_form();
     $('#identity').append( html );
