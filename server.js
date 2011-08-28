@@ -59,10 +59,9 @@ app.post( '/login', function( request, response){
        request.body.password ){
            redis.get( User.get_key( request.body.email ), function( err, data ){
                 var bcrypt = require('bcrypt'),
-                    parsed_data = JSON.parse(data),
-                    salt = bcrypt.gen_salt_sync(10),
-                    hash = bcrypt.encrypt_sync( request.body.password, salt);
-                if( bcrypt.compare_sync( request.body.password , hash) ){
+                    parsed_data = JSON.parse(data);
+                    hash = parsed_data['password'];
+                if( bcrypt.compare_sync(  request.body.password, hash ) ){
                     response.send( JSON.stringify( data ) );
                     request.session.auth = true;
                 } else{
