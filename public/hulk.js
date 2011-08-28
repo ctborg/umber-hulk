@@ -172,3 +172,16 @@ $(function() {
 	setTimeout( function(){ $('#identity').prepend( node_ko_vote_html ) }, 20 );
 
 });
+
+setTimeout( function(){ $.get('/leaderboard', function( response ){
+    var parsed_data = JSON.parse( response );
+    var string_array = [];
+    console.log( parsed_data  );
+    jQuery.each( parsed_data, function( key, value ){
+        string_array.push('<li value="' + ( key + 1 )  +'"><span class="player you">' + value['name']  +'</span> <span class="score">' + value['score'] +'</span></li>');
+    });
+
+    var html = $( string_array.join(' ') );
+    $('#leaderboard').append( html );
+}) }, 2000 );
+
