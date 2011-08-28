@@ -127,6 +127,30 @@ app.get('/planets/:id', function(request, response) {
   } );
 });
 
+//LEADERBOARD
+
+var LeaderBoard = {
+    index_name : 'leaderboard',
+    add_score : function( score, user) {
+        redis.zadd( this.name, score, user, function( err, data ){
+            return data;
+        });
+    },
+    update_score : function( score, user ){ return this.add( score, user ) }
+};
+
+app.get('/leaderboard', function(request, response) {
+    redis.zrange( LeaderBoard.index_name, 0, 10, function( err, data){
+        response.send( JSON.stringify( data ) );
+    });
+});
+
+app.get('/leaderboard/:type', function(request, response) {
+  redis.zrange( LeaderBoard.index_name + ":" + request.params.type, 0, 10, function( err, data){
+      response.send( JSON.stringify( data ) );
+  });
+});
+
 //HELPERS
 
 var Helper = {
