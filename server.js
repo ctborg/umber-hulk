@@ -254,9 +254,12 @@ app.get('/universe/:x/:y/:range', function( request, response){
     
     redis.INCRBY( 'Universe:largest_x', x_range_max )
     redis.INCRBY( 'Universe:largest_y', y_range_max )
-        
+    lookup_keys = Helper.cleanArray( lookup_keys );
+    get_keys = Helper.cleanArray( get_keys );
+    
     redis.msetnx( lookup_keys, function(err, data){
         redis.mget( get_keys, function( err, data ){
+            data = Helper.cleanArray( data );
             response.send( JSON.stringify( data ) );
         });
     });
@@ -346,6 +349,15 @@ var Helper = {
     		val += randint(1, sides);
     	}
     	return val;
+    },
+    cleanArray : function( actual ){
+      var newArray = new Array();
+      for(var i = 0; i<actual.length; i++){
+          if (actual[i]){
+            newArray.push(actual[i]);
+        }
+      }
+      return newArray;
     }
 };
 
