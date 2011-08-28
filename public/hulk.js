@@ -11,22 +11,18 @@ function startgame(){
 
 	function scroll_left(dx){
 		project.layers[0].translate([-dx,0]);
-		paper.view.draw();
 	}
 
 	function scroll_right(dx){
 		project.layers[0].translate([dx,0]);
-		paper.view.draw();
 	}
 
 	function scroll_up(dy){
 		project.layers[0].translate([0,dy]);
-		paper.view.draw();
 	}
 
 	function scroll_down(dy){
 		project.layers[0].translate([0,-dy]);
-		paper.view.draw();
 	}
 
 	function screen_size_in_hexes(){
@@ -137,14 +133,16 @@ function startgame(){
 		if (!desc) return;
 		var x = desc.location[0],
 		    y = desc.location[1],
+		    cx = dX(x,y),
+		    cy = dY(y),
 		    name = desc.name,
 		    resource = desc.resource,
 		    defence = desc.defence,
 		    owner = desc.owner,
 		    p;
-		console.log('drawing a planet at %s, %s', x, y);
+//		console.log('drawing a planet at %s, %s', cx, cy);
 		p = new Raster($('#planet' + d(18))[0]);
-		p.position = [x,y];
+		p.position = [cx,cy];
 		return p;
 	}
 	function ship(x,y,color,owned){
@@ -164,11 +162,11 @@ function startgame(){
 		return s;
 	}
 	function tile(x,y,callback){
+		console.log('hitting the url /universe/%s/%s/%s', x, y, context_hexes());
 		$.getJSON('/universe/' + x + '/' + y + '/' + context_hexes(), function(data){
 			$.each(data, function(){
 				 hex(this);
 			});
-			paper.view.draw();
 			if(callback){
 				callback();
 			}
@@ -244,7 +242,7 @@ function startgame(){
 	canvas.attr({width: window.innerWidth, height: window.innerHeight});
 	paper.setup(canvas[0]);
 	var c = center_hex();
-	tile(c[0],c[1], function(){
+	tile(c.w,c.h, function(){
 		ship(dX(5,4), dY(4), 'blue', true);
 		ship(dX(9,7), dY(7), 'green');
 		ship(dX(1,6), dY(6));
@@ -252,6 +250,7 @@ function startgame(){
 		paper.view.draw();
 //		scroll_up(200);
 	});
+	setInterval(paper.view.draw, 1000/30);
 	load_widgets();
 };
 
