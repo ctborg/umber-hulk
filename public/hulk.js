@@ -194,13 +194,12 @@ function startgame(){
 			}
 		});
 	}
-	function vectorShip(color1, color2, glowOn){
+	function vectorShip(px, py, color1, color2, glowOn){
 		color1 = color1 || '#999';
 		color2 = color2 || '#ddd';
 		glowOn = glowOn || false;
+		var x = 0, y = 0;
 		var invisibleColor = new paper.RGBColor(255, 255, 255, 0);
-		var x = 100;
-		var y = 200;
 		var glow = new Path();
 		if(glowOn = true){
 			glow.fillColor = new GradientColor(new Gradient(['#ffff00', invisibleColor], 'radial'), [x, y+60], [x, y]);
@@ -257,6 +256,8 @@ function startgame(){
 		p3.smooth();
 		var ship = new Group([glow, p1, p2, body, p3]);
 		ship.scale(0.7);
+		ship.position = [px, py];
+		return ship;
 	}
 
 	function moveShipTo(pos){
@@ -285,7 +286,7 @@ function startgame(){
 	paper.setup(canvas[0]);
 	var c = center_hex();
 	tile(c.w,c.h, function(){
-		window.myship = ship(dX(5,4), dY(4), 'blue', true);
+		window.myship = vectorShip(dX(5,4), dY(4), '#00F', '#0F0', true);
 		ship(dX(9,7), dY(7), 'green');
 		ship(dX(1,6), dY(6));
 //		vectorShip('#963', '#369', true);
@@ -323,7 +324,7 @@ $(function() {
         $.ajax({
             url: '/login' ,
             type : 'POST',
-            dataType : 'json',            
+            dataType : 'json',
             data: login_data,
             statusCode: {
                 401 : function(){ alert( 'No user by that name.'); },
