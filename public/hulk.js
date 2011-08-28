@@ -328,6 +328,14 @@ function load_widgets(){
         var html = $( string_array.join(' ') );
         $('#leaderboard').append( html );
     }, 25 );
+    
+    setTimeout( function(){ $.get('/myself', function( response ){
+            console.log( response );
+            var parsed_data = JSON.parse( response );
+            html = $('<button id="logout_button" class="logout">Logout</button><p>Playing as <span id="user">'+ parsed_data['name'] +'</span></p>');
+            $('#identity').append( html );
+        });
+    }, 30);
 });
 
 }
