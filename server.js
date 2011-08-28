@@ -136,8 +136,9 @@ var LeaderBoard = {
             return data;
         });
     },
-    get_top_10 : function( callback ){
-        redis.zrange( 'leaderboard', 0, 10, callback );
+    get_top_10 : function( callback, type ){
+        var index_name = type ? 'leaderboard:' + type : 'leaderboard';
+        redis.zrange( index_name , 0, 10, callback );
     },
     update_score : function( score, user ){ return this.add( score, user ) }
 };
@@ -149,9 +150,9 @@ app.get('/leaderboard', function(request, response) {
 });
 
 app.get('/leaderboard/:type', function(request, response) {
-  redis.zrange( LeaderBoard.index_name + ":" + request.params.type, 0, 10, function( err, data){
-      response.send( JSON.stringify( data ) );
-  });
+    LeaderBoard.get_top_10( function( err, top_10_data ){
+        response.send( JSON.stringify( top_10_data ));
+    }, request.params.type)
 });
 
 //HELPERS
