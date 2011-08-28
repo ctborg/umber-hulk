@@ -4,10 +4,15 @@ function startgame(){
 	var HEX_RADIUS = 56;
 	var HEX_APOTHEM = apothem(HEX_RADIUS); // 48
 	var HEX_INNER_RADIUS = 50;
-	var BORDER = 2;
+	var BORDER = 1;
 	var DEGREE = Math.PI / 180;
 	var offset_x = 0;
 	var offset_y = 0;
+
+	function screen_size_in_hexes(){
+		return {w: Math.ceil(window.innerWidth / ((HEX_APOTHEM + BORDER) * 2)) + 1,
+		        h: Math.ceil(window.innerHeight / (HEX_RADIUS * 1.5 + BORDER)) + 1};
+	}
 
 	function dX(x, y){
 		// convert from x,y position in array of hexes to x coordinate on canvas
@@ -19,7 +24,7 @@ function startgame(){
 	}
 
 	function dY(y){
-		return (y - offset_y) * HEX_RADIUS * 1.5;
+		return (y - offset_y) * (HEX_RADIUS * 1.5 + BORDER);
 	}
 
 	function apothem(radius){
@@ -83,7 +88,6 @@ function startgame(){
 		if (d(10) === 1){
 			var p = new Raster($('#planet' + d(18))[0]);
 			p.position = [x,y];
-			p.scale(.30);
 			return p;
 		}
 	}
@@ -103,9 +107,9 @@ function startgame(){
 		s.opacity = (d(50) + 50) / 100;
 		return s;
 	}
-	function tile(x,y){
-		for (var i = 0; i < 6; i++){
-			for (var j = 0; j < 6; j++){
+	function tile(x,y,w,h){
+		for (var i = 0; i < w; i++){
+			for (var j = 0; j < h; j++){
 				hex(i + x, j + y);
 			}
 		}
@@ -113,15 +117,9 @@ function startgame(){
 	var canvas = $('#canvas');
 	canvas.attr({width: window.innerWidth, height: window.innerHeight});
 	paper.setup(canvas[0]);
-	tile(0,0);
-	tile(0,6);
-	tile(0,12);
-	tile(6,0);
-	tile(6,6);
-	tile(6,12);
-	tile(12,0);
-	tile(12,6);
-	tile(12,12);
+	var canvas_size = screen_size_in_hexes();
+	console.log(canvas_size);
+	tile(0,0, canvas_size.w, canvas_size.h);
 	var x = randint(0,5), y = randint(0,5);
 	ship(dX(5,4), dY(4), 'blue', true);
 	ship(dX(9,7), dY(7), 'green');
