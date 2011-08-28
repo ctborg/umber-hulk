@@ -9,9 +9,34 @@ function startgame(){
 	var offset_x = 0;
 	var offset_y = 0;
 
+	function scroll_left(dx){
+		project.layers[0].translate([-dx,0]);
+		paper.view.draw();
+	}
+
+	function scroll_right(dx){
+		project.layers[0].translate([dx,0]);
+		paper.view.draw();
+	}
+
+	function scroll_up(dy){
+		project.layers[0].translate([0,dy]);
+		paper.view.draw();
+	}
+
+	function scroll_down(dy){
+		project.layers[0].translate([0,-dy]);
+		paper.view.draw();
+	}
+
 	function screen_size_in_hexes(){
 		return {w: Math.ceil(window.innerWidth / ((HEX_APOTHEM + BORDER) * 2)) + 1,
 		        h: Math.ceil(window.innerHeight / (HEX_RADIUS * 1.5 + BORDER)) + 1};
+	}
+
+	function context_hexes(){
+		var size = screen_size_in_hexes();
+		return Math.ceil(Math.max(size.w, size.h) / 2);
 	}
 
 	function dX(x, y){
@@ -56,6 +81,7 @@ function startgame(){
 		hexes[x][y] = group;
 		return group;
 	}
+
 	function randint(start, stop){
         // return an integer between start and stop, inclusive
     	if (stop === undefined){
@@ -107,13 +133,15 @@ function startgame(){
 		s.opacity = (d(50) + 50) / 100;
 		return s;
 	}
-	function tile(x,y,w,h){
-		for (var i = 0; i < w; i++){
-			for (var j = 0; j < h; j++){
-				hex(i + x, j + y);
-			}
-		}
+	function tile(x,y){
+		$.getJSON('/universe/' + x + '/' + y + '/' + context_hexes(), function(data){
+			data.each(function(){
+				 hex(this);
+			});
+		});
 	}
+
+
 	var canvas = $('#canvas');
 	canvas.attr({width: window.innerWidth, height: window.innerHeight});
 	paper.setup(canvas[0]);
@@ -125,6 +153,8 @@ function startgame(){
 	ship(dX(9,7), dY(7), 'green');
 	ship(dX(1,6), dY(6));
 	paper.view.draw();
+	autoscroll();
+	load_widgets();
 };
 
 
@@ -167,8 +197,11 @@ $(function() {
             alert( 'Logged out' );
         } );
     })
+
+});
+
+function load_widgets(){
 	var node_ko_vote_html = '<div id="node-vote"><div class="text">Think we rock?<br>Vote 4 us!</div><iframe class="vote-button" src="http://nodeknockout.com/iframe/umber-hulk" frameborder="0" scrolling="no" allowtransparency="true" width="115" height="25"></iframe></div>';
 	// Vote button blocks site from loading.  Prepend after load.
 	setTimeout( function(){ $('#identity').prepend( node_ko_vote_html ) }, 20 );
-
-});
+}
