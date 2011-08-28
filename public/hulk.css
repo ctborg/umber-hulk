@@ -9,3 +9,36 @@
 	left: 0px;
 }
 
+header{
+	-moz-border-radius: 10px;
+	-webkit-border-radius: 10px;
+	border-radius: 10px;
+	background-color: rgba(255,255,255,.6);
+	position:absolute;
+	top: 20px;
+	left: 20px;
+   padding: 0px 15px;
+}
+h1{
+	font-family: Georgia;
+	font-size: 2em;
+	color: #333;
+}
+aside{
+	-moz-border-radius: 10px;
+	-webkit-border-radius: 10px;
+	border-radius: 10px;
+	background-color: rgba(255,255,255,.6);
+	position: absolute;
+	top: 20px;
+	right: 20px;
+	padding: 0px 30px;
+	height: 70%;
+	width: 200px;
+	overflow: auto;
+	color: #333;
+}
+
+.logout{
+	float: right;
+}

@@ -78,15 +78,39 @@
     	<img src="images/ship30.png" id="ship30" class="ship" />
     </div>
   <div id="container">
+    <canvas width="800" height="400" data-paper-resize="true" id="canvas"></canvas>
     <header>
 		<h1>Galaxy Ruler</h1>
     </header>
     <div id="main" role="main">
-		<canvas width="800" height="400" data-paper-resize="true" id="canvas"></canvas>
     </div>
     <aside>
-    	<p>Put leaderboard here</p>
-    	<p>Put login here</p>
+        <div id="identity">
+            <button class="logout">Logout</button>
+            <p>Playing as <span id="user">Augusta</span></p>
+        </div>
+        <div>
+            <h3>Leaderboard</h3>
+            <!-- demo names drawn from http://blogs.oracle.com/katysblog/entry/famous_women_in_computer_science -->
+                <ol id="leaderboard">
+                <li><span class="player">Grace</span> <span class="score">33950</span></li>
+                <li><span class="player">Frances</span> <span class="score">29041</span></li>
+                <li><span class="player">Barbara</span> <span class="score">28987</span></li>
+                <li><span class="player">Kay</span> <span class="score">27123</span></li>
+                <li><span class="player">Betty</span> <span class="score">24934</span></li>
+                <li><span class="player">Ruth</span> <span class="score">225443</span></li>
+                <li><span class="player">Fran</span> <span class="score">21343</span></li>
+                <li><span class="player">Jean</span> <span class="score">19854</span></li>
+                <li><span class="player">Erna</span> <span class="score">13426</span></li>
+                <li><span class="player">Eva</span> <span class="score">12342</span></li>
+                <p>&hellip;</p>
+                <li value="256"><span class="player you">Augusta</span> <span class="score">2048</span></li>
+            </ol>
+        <div class="login">
+            <h3>Login</h3>
+            <p><label for="login_email">Email:</label> <input name="login_email" id="login_email" /></p>
+            <p></label for="login_password">Password:</label> <input name="login_password" id="login_password" /></p>
+        </div>
     </aside>
     <footer>
 
