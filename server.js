@@ -220,6 +220,7 @@ var Universe = {
 app.get('/universe/:x/:y/:range', function( request, response){
     //A bit of an oddball function.  Get space, if unknown set space.
     var lookup_keys = [],
+        get_keys    = [],
         empty_space = [],
         x_range_max = parseInt( request.params.x ) + parseInt( request.params.range ),
         x_range_min = parseInt( request.params.x ) - parseInt( request.params.range ),
@@ -229,14 +230,16 @@ app.get('/universe/:x/:y/:range', function( request, response){
         for (var j= y_range_min; j <= y_range_max; j++ ){
             lookup_keys.push( 'Universe:' + i + ':' + j);
             lookup_keys.push( JSON.stringify( { 'location' :[i,j], 'planet' : Universe.get_planet_maybe(i,j), 'user' : false } ) );
+            get_keys.push( 'Universe:' + i + ':' + j );
         }
     }
-    console.log( lookup_keys );
-    redis.msetnx( lookup_keys );
 
-    redis.mget( lookup_keys, function( err, data ){
-        response.send( JSON.stringify( data ) );
+    redis.msetnx( lookup_keys, function(err, data){
+        redis.mget( get_keys, function( err, data ){
+            response.send( JSON.stringify( data ) );
+        });
     });
+
 });
 
 //LEADERBOARD
