@@ -102,7 +102,8 @@ app.get( '/logout', function( request, response){
 var User = {
     get_key : function(id){ return Helper.get_key( id , 'User'); },
     qualities : function( request ){
-                    var user_qualities = { 'email'     : request.body.email,
+                    var user_qualities = { 'name'     : request.body.email,
+                                           'email'     : request.body.email,
                                            'location'  : request.body.location,
                                            'speed'     : request.body.speed,
                                            'password'  : request.body.password
@@ -249,14 +250,28 @@ var LeaderBoard = {
     },
     get_top_10 : function( callback, type ){
         var index_name = type ? 'leaderboard:' + type : 'leaderboard';
-        redis.zrange( index_name , 0, 10, callback );
+        redis.zrevrange( index_name , 0, 10, 'WITHSCORES', callback );
     },
-    update_score : function( score, user ){ return this.add( score, user ) }
+    update_score : function( score, user ){ return this.add_score( score, user ) }
 };
 
 app.get('/leaderboard', function(request, response) {
     LeaderBoard.get_top_10( function( err, top_10_data ){
-        response.send( JSON.stringify( top_10_data ));
+        if( top_10_data ){
+            var count = 0;
+            formated_data = [];
+            console.log( top_10_data );
+            for(item in top_10_data){
+                if( count % 2){
+                    ranking = { "name" : top_10_data[ count -1 ], "score" : top_10_data[ count ]  }
+                    formated_data.push( ranking );
+                }
+                count++;
+            }
+        }
+        console.log( formated_data );
+        
+        response.send( JSON.stringify( formated_data ));
     })
 });
 

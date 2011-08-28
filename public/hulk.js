@@ -34,6 +34,22 @@ function startgame(){
 		        h: Math.ceil(window.innerHeight / (HEX_RADIUS * 1.5 + BORDER)) + 1};
 	}
 
+	function offset_in_hexes(){
+		return {w: Math.ceil(offset_x / ((HEX_APOTHEM + BORDER) * 2)),
+		        h: Math.ceil(offset_y / (HEX_RADIUS * 1.5 + BORDER))};
+	}
+
+	function zero_center_hex(){
+		var size = screen_size_in_hexes();
+		return {w: Math.floor(size.w / 2), h: Math.floor(size.h / 2)};
+	}
+
+	function center_hex(){
+		var c = zero_center_hex();
+		var o = offset_in_hexes();
+		return {w: c.w + o.w, h: c.h + o.h};
+	}
+
 	function context_hexes(){
 		var size = screen_size_in_hexes();
 		return Math.ceil(Math.max(size.w, size.h) / 2);
@@ -58,28 +74,35 @@ function startgame(){
 		return Math.round(radius * Math.cos(Math.PI / 6));
 	}
 
-	function hex(x,y){
+	function hex(desc){
+		 if (!desc) return;
+		 if (desc.split){
+		 	desc = JSON.parse(desc);
+		 }
+		 var x = desc.location[0],
+		     y = desc.location[1],
+		     planet_desc = desc.planet,
+		     user_desc = desc.user,
+		     the_hex;
 		if (hexes[x] && hexes[x][y]){
-			return hexes[x][y];
+			the_hex = hexes[x][y];
+		}else{
+			var the_hex = new Group();
+			if (!hexes[x]){
+				hexes[x] = [];
+			}
+			var c_x = dX(x,y), c_y = dY(y); // convert array coords to canvas coords
+			var bh = new Path.RegularPolygon([c_x, c_y], 6, HEX_RADIUS);
+			bh.fillColor = '333';
+			the_hex.addChild(bh);
+			var h = new Path.RegularPolygon([c_x,c_y], 6, HEX_INNER_RADIUS);
+			h.fillColor = '000';
+			the_hex.addChild(h);
+			stars(the_hex,c_x,c_y);
+			hexes[x][y] = the_hex;
 		}
-		var group = new Group();
-		if (!hexes[x]){
-			hexes[x] = [];
-		}
-		var c_x = dX(x,y), c_y = dY(y); // convert array coords to canvas coords
-		var bh = new Path.RegularPolygon([c_x, c_y], 6, HEX_RADIUS);
-		bh.fillColor = '333';
-		group.addChild(bh);
-		var h = new Path.RegularPolygon([c_x,c_y], 6, HEX_INNER_RADIUS);
-		h.fillColor = '000';
-		group.addChild(h);
-		stars(group,c_x,c_y);
-		var p = planet(c_x, c_y);
-		if (p){
-			group.addChild(p);
-		}
-		hexes[x][y] = group;
-		return group;
+		planet(planet_desc);
+		return the_hex;
 	}
 
 	function randint(start, stop){
@@ -110,12 +133,19 @@ function startgame(){
 		}
 	}
 
-	function planet(x, y){
-		if (d(10) === 1){
-			var p = new Raster($('#planet' + d(18))[0]);
-			p.position = [x,y];
-			return p;
-		}
+	function planet(desc){
+		if (!desc) return;
+		var x = desc.location[0],
+		    y = desc.location[1],
+		    name = desc.name,
+		    resource = desc.resource,
+		    defence = desc.defence,
+		    owner = desc.owner,
+		    p;
+		console.log('drawing a planet at %s, %s', x, y);
+		p = new Raster($('#planet' + d(18))[0]);
+		p.position = [x,y];
+		return p;
 	}
 	function ship(x,y,color,owned){
 			// color is blue, green, red, or plain
@@ -133,27 +163,95 @@ function startgame(){
 		s.opacity = (d(50) + 50) / 100;
 		return s;
 	}
-	function tile(x,y){
+	function tile(x,y,callback){
 		$.getJSON('/universe/' + x + '/' + y + '/' + context_hexes(), function(data){
-			data.each(function(){
+			$.each(data, function(){
 				 hex(this);
 			});
+			paper.view.draw();
+			if(callback){
+				callback();
+			}
 		});
+	}
+	function vectorShip(color1, color2, glowOn){
+		color1 = color1 || '#999';
+		color2 = color2 || '#ddd';
+		glowOn = glowOn || false;
+		var invisibleColor = new paper.RGBColor(255, 255, 255, 0);
+		var x = 100;
+		var y = 200;
+		var glow = new Path();
+		if(glowOn = true){
+			glow.fillColor = new GradientColor(new Gradient(['#ffff00', invisibleColor], 'radial'), [x, y+60], [x, y]);
+			glow.add(x, y-20);
+			glow.add(x+100, y+70);
+			glow.add(x, y+140);
+			glow.add(x-100, y+70);
+			glow.add(x, y-20);
+		}
+		var p1 = new Path();
+		p1.fillColor = new GradientColor(new Gradient([color1, color2], 'linear'), [x-10, y+85], [x-25, y+110]);
+		p1.add(x-10, y+85);
+		p1.add(x-15, y+90);
+		p1.add(x-20, y+100);
+		p1.add(x-20, y+110);
+		p1.add(x-25, y+100);
+		p1.add(x-23, y+90);
+		p1.add(x-21, y+85);
+		p1.add(x-10, y+70);
+		p1.add(x-10, y+85);
+		p1.smooth();
+		var p2 = new Path();
+		p2.fillColor = new GradientColor(new Gradient([color1, color2], 'linear'), [x+10, y+85], [x+25, y+110]);
+		p2.add(x+10, y+85);
+		p2.add(x+15, y+90);
+		p2.add(x+20, y+100);
+		p2.add(x+20, y+110);
+		p2.add(x+25, y+100);
+		p2.add(x+23, y+90);
+		p2.add(x+21, y+85);
+		p2.add(x+10, y+70);
+		p2.add(x+10, y+85);
+		p2.smooth();
+		var body = new Path();
+		body.add(x, y);
+		body.add(x+10, y+20);
+		body.add(x+20, y+50);
+		body.add(x+20, y+70);
+		body.add(x+10, y+90);
+		body.add(x-10, y+90);
+		body.add(x-20, y+70);
+		body.add(x-20, y+50);
+		body.add(x-10, y+20);
+		body.add(x, y);
+		body.smooth();
+		body.fillColor = new GradientColor(new Gradient([color1, color2], 'linear'), [x, y], [x, y+90]);
+		var p3 = new Path();
+		p3.fillColor = new GradientColor(new Gradient([color1, color2], 'linear'), [x, y+80], [x, y+115]);
+		p3.add(x, y+80);
+		p3.add(x+3, y+95);
+		p3.add(x, y+115);
+		p3.add(x-3, y+ 95)
+		p3.add(x, y+80);
+		p3.smooth();
+		var ship = new Group([glow, p1, p2, body, p3]);
+		ship.scale(0.7);
 	}
 
 
 	var canvas = $('#canvas');
 	canvas.attr({width: window.innerWidth, height: window.innerHeight});
 	paper.setup(canvas[0]);
-	var canvas_size = screen_size_in_hexes();
-	console.log(canvas_size);
-	tile(0,0, canvas_size.w, canvas_size.h);
-	var x = randint(0,5), y = randint(0,5);
-	ship(dX(5,4), dY(4), 'blue', true);
-	ship(dX(9,7), dY(7), 'green');
-	ship(dX(1,6), dY(6));
-	paper.view.draw();
-	autoscroll();
+	var c = center_hex();
+	tile(c[0],c[1], function(){
+		ship(dX(5,4), dY(4), 'blue', true);
+		ship(dX(9,7), dY(7), 'green');
+		ship(dX(1,6), dY(6));
+//		vectorShip('#963', '#369', true);
+		paper.view.draw();
+//		scroll_up(200);
+	});
 	load_widgets();
 };
 
@@ -204,4 +302,17 @@ function load_widgets(){
 	var node_ko_vote_html = '<div id="node-vote"><div class="text">Think we rock?<br>Vote 4 us!</div><iframe class="vote-button" src="http://nodeknockout.com/iframe/umber-hulk" frameborder="0" scrolling="no" allowtransparency="true" width="115" height="25"></iframe></div>';
 	// Vote button blocks site from loading.  Prepend after load.
 	setTimeout( function(){ $('#identity').prepend( node_ko_vote_html ) }, 20 );
+
+	setTimeout( function(){ $.get('/leaderboard', function( response ){
+		var parsed_data = JSON.parse( response );
+		var string_array = [];
+		console.log( parsed_data  );
+		jQuery.each( parsed_data, function( key, value ){
+			string_array.push('<li value="' + ( key + 1 )  +'"><span class="player you">' + value['name']  +'</span> <span class="score">' + value['score'] +'</span></li>');
+		});
+
+		var html = $( string_array.join(' ') );
+		$('#leaderboard').append( html );
+	}) }, 20 );
+
 }
