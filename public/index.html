@@ -63,8 +63,9 @@
     <div id="main" role="main">
     </div>
     <aside>
+
         <div id="identity">
-            <button class="logout">Logout</button>
+            <button id="logout_button" class="logout">Logout</button>
             <p>Playing as <span id="user">Augusta</span></p>
         </div>
         <div>
@@ -84,11 +85,14 @@
                 <p>&hellip;</p>
                 <li value="256"><span class="player you">Augusta</span> <span class="score">2048</span></li>
             </ol>
+		</div>
         <div class="login">
             <h3>Login</h3>
             <p><label for="login_email">Email:</label> <input name="login_email" id="login_email" /></p>
-            <p></label for="login_password">Password:</label> <input name="login_password" id="login_password" /></p>
+            <p></label for="login_password">Password:</label> <input type="password" name="login_password" id="login_password" /></p>
+			<button id="login_button" class="login">Login</button>
         </div>
+
     </aside>
     <footer>
 
