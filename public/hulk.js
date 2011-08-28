@@ -8,6 +8,8 @@ function startgame(){
 	var DEGREE = Math.PI / 180;
 	var offset_x = 0;
 	var offset_y = 0;
+	var last_update_x = 0;
+	var last_update_y = 0;
 
 	function scroll_left(dx){
 		project.layers[0].translate([-dx,0]);
@@ -30,8 +32,17 @@ function startgame(){
 
 	function move_by(pt){
 		project.layers[0].translate(pt);
-		offset_x += pt[0];
-		offset_y += pt[1];
+		offset_x += pt.x;
+		offset_y += pt.y;
+		if (Math.abs(last_update_x - offset_x) > HEX_RADIUS ||
+		    Math.abs(last_update_y - offset_y) > HEX_RADIUS){
+		    last_update_x = offset_x;
+		    last_update_y = offset_y;
+		    var c = center_hex();
+		    console.log('updating hexes centered on %d,%d', c.w, c.h);
+			tile(c.w,c.h);
+
+		}
 	}
 
 	function screen_size_in_hexes(){
@@ -52,6 +63,7 @@ function startgame(){
 	function center_hex(){
 		var c = zero_center_hex();
 		var o = offset_in_hexes();
+		console.log('center hex: %d,%d', c.w + o.w, c.h + o.h);
 		return {w: c.w + o.w, h: c.h + o.h};
 	}
 
@@ -91,7 +103,9 @@ function startgame(){
 		     the_hex;
 		if (hexes[x] && hexes[x][y]){
 			the_hex = hexes[x][y];
+			//console.log('found hex for %d,%d', x,y );
 		}else{
+			//console.log('drawing hex for %d,%d\n%o', x, y, desc);
 			var the_hex = new Group();
 			if (!hexes[x]){
 				hexes[x] = [];
@@ -159,6 +173,7 @@ function startgame(){
 			color =  color || 'plain'
 			var p = new Raster($('#' + type + 'ship' + color)[0]);
 			p.position = [x,y];
+			return p;
 	}
 	function star(x,y, magnitude){
 		var cx, cy, r = d(HEX_APOTHEM), theta = d(360) * DEGREE;
@@ -244,19 +259,39 @@ function startgame(){
 		ship.scale(0.7);
 	}
 
+	function moveShipTo(pos){
+		var ship_pos = myship.position,
+			dx = ship_pos.x - pos.x,
+			dy = ship_pos.y - pos.y,
+			new_x, new_y;
+		if (dx === 0 && dy === 0) return;
+		if (Math.abs(dx) < 10){
+			new_x = ship_pos.x -  dx;
+		}else{
+			new_x = ship_pos.x - 10 * (dx / Math.abs(dx));
+		}
+		if (Math.abs(dy) < 10){
+			new_y = ship_pos.y -  dy;
+		}else{
+			new_y = ship_pos.y - 10 * (dy / Math.abs(dy));
+		}
+		myship.position = [new_x, new_y];
+		console.log('moving towards %d,%d, now at %d,%d', pos.x, pos.y, new_x, new_y)
+		setTimeout(function(){moveShipTo(pos);}, 1000/30);
+	}
 
 	var canvas = $('#canvas');
 	canvas.attr({width: window.innerWidth, height: window.innerHeight});
 	paper.setup(canvas[0]);
 	var c = center_hex();
 	tile(c.w,c.h, function(){
-		ship(dX(5,4), dY(4), 'blue', true);
+		window.myship = ship(dX(5,4), dY(4), 'blue', true);
 		ship(dX(9,7), dY(7), 'green');
 		ship(dX(1,6), dY(6));
 //		vectorShip('#963', '#369', true);
 		paper.view.draw();
 //		scroll_up(200);
-		var c = zero_center_hex();
+		project.layers[0].translate([-offset_x, -offset_y]);
 		view.onFrame = function(event){
 			paper.view.draw();
 		};
@@ -266,6 +301,13 @@ function startgame(){
 		var tool = new Tool();
 		tool.onMouseDrag = function(event){
 			move_by(event.delta);
+		};
+		tool.onMouseUp = function(event){
+			try{
+				moveShipTo(event.item.getPosition());
+			}catch(e){
+				// oh well
+			}
 		};
 	});
 	load_widgets();
@@ -328,7 +370,7 @@ function load_widgets(){
         var html = $( string_array.join(' ') );
         $('#leaderboard').append( html );
     }, 25 );
-    
+
     setTimeout( function(){ $.get('/myself', function( response ){
             console.log( response );
             var parsed_data = JSON.parse( response );
