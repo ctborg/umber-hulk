@@ -15,5 +15,7 @@
     "express": "2.4.2",   
     "pg": "0.5.4"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "jasmine-node": "1.0.8"
+  }
 }
