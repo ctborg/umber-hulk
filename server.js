@@ -1,27 +1,27 @@
 require.paths.unshift('lib');
 
-var http = require('http')
-    ,nko = require('nko')('TNvpskvCg1xzhyex')
-    ,express = require('express')
-    ,app = express.createServer()
-    ,redis_lib = require("redis")
-    ,redis = redis_lib.createClient()
-    ,redis_session_store = require('connect-redis')(express)
-    ,User = require('models/user')
-    ,Helper = require('helpers/helper');
+var   http = require('http')
+    , nko = require('nko')('TNvpskvCg1xzhyex')
+    , express = require('express')
+    , app = express.createServer()
+    , redis_lib = require("redis")
+    , redis_session_store = require('connect-redis')(express)
+    , User = require('models/user')
+    , Helper = require('helpers/helper');
 
 app.configure(function(){
-    app.use(express.methodOverride());
-    app.use(express.bodyParser());
-    app.use(express.cookieParser());
-    app.use(express.session({ secret: "vzi13nmADFmnizfFmkjkkZqaQa9pPI&^5n==", store: new redis_session_store }));
-    app.use(app.router);
+  app.use(express.methodOverride());
+  app.use(express.bodyParser());
+  app.use(express.cookieParser());
+  app.use(express.session({ secret: "vzi13nmADFmnizfFmkjkkZqaQa9pPI&^5n==", store: new redis_session_store }));
+  app.use(app.router);
 });
 
 app.configure('development', function(){
-    app.use('/', express.static(__dirname + '/public'));
-    app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
-    app.listen(3000);
+  app.redis = redis_lib.createClient();
+  app.use('/', express.static(__dirname + '/public'));
+  app.use(express.errorHandler({ dumpExceptions: true, showStack: true }));
+  app.listen(3000);
 });
 
 app.configure('production', function(){
@@ -31,7 +31,7 @@ app.configure('production', function(){
   app.listen(80);
 });
 
-redis.on("error", function (err) {
+app.redis.on("error", function (err) {
     console.log( err );
 });
 
@@ -39,77 +39,8 @@ redis.on("error", function (err) {
 //TODO: add validation
 
 
-// TODO: this _really_ should be more RESTful!
-
-app.post('/new_user', function(request, response) {
-  var user = User.fromParams(request.body);
-
-  if(user.valid()) {
-    redis.mget( 'Universe:largest_x', 'Universe:largest_y', function(err, location) {
-      if(err) {
-        response.writeHead(403);
-        response.end('Universe cannot expand further.');
-        return;
-      }
-
-      user.location = location;
-
-      redis.set(user.key(), user.toRedis(), function(err) {
-        if(err) {        
-          response.writeHead(403);
-          response.end('User exists.');
-        } else {
-          request.session.auth = true;
-          response.send(user.toJSON());
-        }
-      });
-    });
-  } else {
-    response.writeHead(403);
-    response.end(user.errors());
-  }
-});
-
-app.post( '/login', function(request, response) {
-  var user = User.fromParams(request.body);
-  
-  redis.get(user.key(), function(err, data) {
-    if(err) {
-      response.writeHead(401);
-      response.end('Invalid login.');
-      request.session.auth = false;
-    }
-
-    var _user = User.fromRedis(data);
-
-    if(_user.authenticate(request.body.password)) {
-      request.session.auth = true;
-      request.session.user = _user.toRedis();
-      response.send(_user.toRedis());
-    } else {
-      response.writeHead(401);
-      response.end('Invalid login.');
-      request.session.auth = false;
-    }
-  });
-});
-
-app.get( '/logout', function( request, response){
-   request.session.destroy();
-   response.send('OK');
-});
-
-
-// Read
-app.get('/users/:id', function(request, response) {
-  redis.get( User.get_key( request.params.id ), function( err, data ){
-      response.send( JSON.stringify( data ) );
-  } );
-});
-
-app.get('/myself', function(request,response){
-    request.session.user ? response.send( request.session.user['name'] ) : response.send( null );
-});
+require('controllers/users')(app);
+require('controllers/session')(app);
 
 
 //PLANETS
@@ -127,7 +58,7 @@ var Planet = {
                     return planet_qualities;
                 },
     add_or_update : function(request, response){
-        Helper.add_or_update( redis, request, response, 'Planet', this.qualities( request ) );
+        Helper.add_or_update( app.redis, request, response, 'Planet', this.qualities( request ) );
     },
     get_planet_name : function(){
         var text = "";
@@ -165,7 +96,7 @@ var Planet = {
 
 // Read
 app.get('/planets/:id', function(request, response) {
-  redis.get( Planet.get_key( request.params.id ), function( err, data ){
+  app.redis.get( Planet.get_key( request.params.id ), function( err, data ){
       response.send( JSON.stringify( data ) );
   } );
 });
@@ -184,16 +115,16 @@ var Universe = {
                     return universe_qualities;
                 },
     add_or_update : function(request, response){
-        Helper.add_or_update( redis, request, response, 'Planet', this.qualities( request ) );
+        Helper.add_or_update( app.redis, request, response, 'Planet', this.qualities( request ) );
     },
     get_planet_maybe : function(x,y){
         return Helper.randint(1, 10) == 10 ? Planet.create_planet(x,y) : false;
     },
     place_user_at_edge_of_known_universe : function( callback ){
-        redis.mget( 'Universe:largest_x', 'Universe:largest_y', callback);
+        app.redis.mget( 'Universe:largest_x', 'Universe:largest_y', callback);
         //increment by 10 for every new user, so they don't stack up.
-        redis.INCRBY( 'Universe:largest_x', 10 );
-        redis.INCRBY( 'Universe:largest_y', 10 );
+        app.redis.INCRBY( 'Universe:largest_x', 10 );
+        app.redis.INCRBY( 'Universe:largest_y', 10 );
     }
 };
 
@@ -219,13 +150,13 @@ app.get('/universe/:x/:y/:range', function( request, response){
         }
     }
     
-    redis.INCRBY( 'Universe:largest_x', x_range_max );
-    redis.INCRBY( 'Universe:largest_y', y_range_max );
+    app.redis.INCRBY( 'Universe:largest_x', x_range_max );
+    app.redis.INCRBY( 'Universe:largest_y', y_range_max );
     lookup_keys = Helper.cleanArray( lookup_keys );
     get_keys = Helper.cleanArray( get_keys );
     
-    redis.msetnx( lookup_keys, function(err, data){
-        redis.mget( get_keys, function( err, data ){
+    app.redis.msetnx( lookup_keys, function(err, data){
+        app.redis.mget( get_keys, function( err, data ){
             data = Helper.cleanArray( data );
             response.send( JSON.stringify( data ) );
         });
@@ -238,13 +169,13 @@ app.get('/universe/:x/:y/:range', function( request, response){
 var LeaderBoard = {
     index_name : 'leaderboard',
     add_score : function( score, user, type) {
-        redis.zadd( this.name, score, user, function( err, data ){
+        app.redis.zadd( this.name, score, user, function( err, data ){
             response.send( JSON.stringify( data ));
         });
     },
     get_top_10 : function( callback, type ){
         var index_name = type ? 'leaderboard:' + type : 'leaderboard';
-        redis.zrevrange( index_name , 0, 10, 'WITHSCORES', callback );
+        app.redis.zrevrange( index_name , 0, 10, 'WITHSCORES', callback );
     },
     update_score : function( score, user ){ return this.add_score( score, user ); }
 };

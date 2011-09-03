@@ -314,8 +314,8 @@ $(function() {
     $('#login_button').live( 'click', function(){
         var login_data = { 'email' : $('#login_email').val(), 'password' : $('#login_password').val() };
         $.ajax({
-            url: '/login' ,
-            type : 'POST',
+            url: '/session' ,
+            type : 'PUT',
             dataType : 'json',
             data: login_data,
             statusCode: {
@@ -330,7 +330,7 @@ $(function() {
     $('#create_user_button').live( 'click', function(){
         var login_data = { 'email' : $('#login_email').val(), 'password' : $('#login_password').val() };
         $.ajax({
-            url: '/new_user' ,
+            url: '/users' ,
             type : 'POST',
             dataType : 'json',
             data: login_data,
@@ -344,7 +344,10 @@ $(function() {
     });
 
     $('#logout_button').live( 'click', function(){
-        $.get('/logout');
+        $.ajax({
+          url: '/session',
+          type: 'DELETE'
+        });
         $('#identity').html('');
         display_login_form();
     })

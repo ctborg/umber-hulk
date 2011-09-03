@@ -66,4 +66,16 @@ describe("User", function() {
       expect(user.authenticate('invalid')).toBe(false);
     });
   });
+  
+  describe("fromParams", function() {
+    it("should set an encrypted password when a password is given", function() {
+      var user = User.fromParams({password: 'password'});
+      expect(user.encrypted_password).toMatch(/\w+/);
+    });
+    
+    it("should not overwrite a given encrypted password", function() {
+      var user = User.fromParams({encrypted_password: 'password'});
+      expect(user.encrypted_password).toEqual('password');
+    });
+  });
 });
